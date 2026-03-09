@@ -33,8 +33,10 @@ module aoxc::treasury {
     public struct MerkleRewardClaimed has copy, drop { epoch: u64, user: address, amount: u64 }
 
     struct ClaimLeafInput has copy, drop, store {
+        epoch: u64,
         user: address,
         amount: u64,
+        token_type: vector<u8>,
     }
 
     public fun validate_distribution_vectors(recipients_len: u64, amounts_len: u64) {
@@ -51,10 +53,34 @@ module aoxc::treasury {
         false
     }
 
-    fun leaf_hash(user: address, amount: u64): vector<u8> {
-        let input = ClaimLeafInput { user, amount };
+    fun leaf_hash(epoch: u64, user: address, amount: u64, token_type: vector<u8>): vector<u8> {
+        let input = ClaimLeafInput { epoch, user, amount, token_type };
         let bytes = bcs::to_bytes(&input);
         sui::hash::keccak256(&bytes)
+    }
+
+    fun hash_pair(left: vector<u8>, right: vector<u8>): vector<u8> {
+        let mut acc = left;
+        vector::append(&mut acc, right);
+        sui::hash::keccak256(&acc)
+    }
+
+    fun verify_merkle_path(leaf: vector<u8>, siblings: vector<vector<u8>>, path_is_left: vector<bool>): vector<u8> {
+        assert!(vector::length(&siblings) == vector::length(&path_is_left), errors::E_LENGTH_MISMATCH);
+        let mut acc = leaf;
+        let len = vector::length(&siblings);
+        let mut i = 0;
+        while (i < len) {
+            let sibling = *vector::borrow(&siblings, i);
+            let sibling_on_left = *vector::borrow(&path_is_left, i);
+            if (sibling_on_left) {
+                acc = hash_pair(sibling, acc);
+            } else {
+                acc = hash_pair(acc, sibling);
+            };
+            i = i + 1;
+        };
+        acc
     }
 
     entry fun init<T>(min_reputation_score: u64, ctx: &mut TxContext) {
@@ -139,22 +165,27 @@ module aoxc::treasury {
         event::emit(MerkleRootPublished { epoch: pool.epoch, root_hash: copy pool.current_root });
     }
 
-    /// Gas-efficient claim path for large recipient sets.
-    /// `proof_root` is a currently simplified aggregator proof root (must match active root).
+    /// Gas-efficient claim path for large recipient sets with full Merkle path verification.
     entry fun claim_reward<T>(
         breaker: &circuit_breaker::CircuitBreaker,
         pool: &mut MerkleClaimPool<T>,
         treasury: &mut AutonomousTreasury<T>,
         user: address,
         amount: u64,
-        proof_root: vector<u8>,
+        token_type: vector<u8>,
+        claim_epoch: u64,
+        siblings: vector<vector<u8>>,
+        path_is_left: vector<bool>,
         ctx: &mut TxContext,
     ) {
         circuit_breaker::assert_live(breaker);
         assert!(amount > 0, errors::E_AMOUNT_ZERO);
-        assert!(proof_root == pool.current_root, errors::E_INVALID_ARGUMENT);
+        assert!(claim_epoch == pool.epoch, errors::E_INVALID_ARGUMENT);
+        assert!(vector::length(&token_type) > 0, errors::E_INVALID_ARGUMENT);
 
-        let leaf = leaf_hash(user, amount);
+        let leaf = leaf_hash(claim_epoch, user, amount, token_type);
+        let computed_root = verify_merkle_path(copy leaf, siblings, path_is_left);
+        assert!(computed_root == pool.current_root, errors::E_INVALID_ARGUMENT);
         assert!(!contains_hash(&pool.claimed_leaf_hashes, &leaf), errors::E_ALREADY_CLAIMED);
         assert!(balance::value(&treasury.vault) >= amount, errors::E_INSUFFICIENT_BALANCE);
 
@@ -168,6 +199,11 @@ module aoxc::treasury {
     }
 
     public fun balance_of<T>(treasury: &AutonomousTreasury<T>): u64 { balance::value(&treasury.vault) }
+
+    public fun preview_claim_root(epoch: u64, user: address, amount: u64, token_type: vector<u8>, siblings: vector<vector<u8>>, path_is_left: vector<bool>): vector<u8> {
+        let leaf = leaf_hash(epoch, user, amount, token_type);
+        verify_merkle_path(leaf, siblings, path_is_left)
+    }
 }
 
 

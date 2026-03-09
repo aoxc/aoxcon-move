@@ -48,12 +48,17 @@
 
 ### 1.9 Merkle Claim Treasury Invariants
 - Published root hash must be non-empty.
-- Claim proof root must match active epoch root.
+- Claim path must provide sibling + index-direction vectors with equal length.
+- Leaf domain is separated by `(epoch, user, amount, token_type)`.
+- Recomputed Merkle root from leaf/path must match active epoch root.
 - Leaf hash can be claimed at most once per epoch.
 
 ### 1.10 Cross-Chain Quorum Invariants
 - Bridge/report critical operations require quorum threshold satisfaction.
 - Single-attestor approvals are insufficient when threshold > 1.
+- Quorum threshold must satisfy `0 < threshold <= attestor_count`.
+- Attestor lifecycle changes (add/remove/disable) bump quorum epoch.
+- Bridge commands must target the active quorum epoch.
 
 ### 1.11 XLayer Compatibility Invariants
 - Payload `schema_version` must be supported.
@@ -109,6 +114,13 @@
 ## 7. Phase-2B Operations
 - Scenario war-games should model complete object-flow sequences for bridge, DAO, treasury, and reputation modules.
 - Branding update operations require module cap + DAO cap + checksum agreement.
+
+
+## 9. Phase-4 Immutable Standard
+- Relay governance now includes attestor lifecycle operations (add/remove/disable) and epoch-versioned quorum state.
+- Neural bridge verification accepts signatures only from active (non-disabled) attestors and enforces quorum epoch matching.
+- Treasury claim mode upgraded to production Merkle path verification using sibling/index vectors.
+- AOXC and reputation branding are tracked through DAO-gated versioned manifest objects with immutable release-hash history.
 
 
 ## 8. Formal Verification Notes

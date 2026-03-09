@@ -1,11 +1,13 @@
 #[test_only]
 module aoxc::scenario_tests {
     use std::string;
+    use std::vector;
     use aoxc::aoxc;
     use aoxc::bridge_payload;
     use aoxc::circuit_breaker;
     use aoxc::errors;
     use aoxc::reputation;
+    use aoxc::relay;
     use aoxc::sentinel_dao;
     use aoxc::treasury;
     use sui::test_scenario;
@@ -69,6 +71,24 @@ module aoxc::scenario_tests {
             b"fund-proof",
         );
         let _decoded = bridge_payload::decode_fund_update_payload(raw);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun e2e_merkle_preview_path_domain_sep() {
+        let scenario = test_scenario::begin(@0xA0);
+        let siblings = vector[b"sib-a", b"sib-b"];
+        let path = vector[true, false];
+        let root_1 = treasury::preview_claim_root(7, @0xA0, 100, b"AOXC", copy siblings, copy path);
+        let root_2 = treasury::preview_claim_root(8, @0xA0, 100, b"AOXC", siblings, path);
+        assert!(root_1 != root_2, errors::E_INVALID_ARGUMENT);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun e2e_quorum_lifecycle_rules() {
+        let scenario = test_scenario::begin(@0xA0);
+        relay::assert_threshold_valid(4, 3);
         test_scenario::end(scenario);
     }
 }

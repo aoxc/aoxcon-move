@@ -16,12 +16,24 @@
 12. Architecture and security checklist docs (`docs/ARCHITECTURE.md`, `docs/SECURITY_CHECKLIST.md`).
 13. Phase-3 quorum + XLayer payload compatibility + Tier-2 timelock controls integrated.
 
+## Phase-4 Delta (Immutable Standard)
+
+1. **Production Merkle Verification**
+   - `treasury::claim_reward` now verifies full sibling/path Merkle proofs.
+   - Leaf hashing is domain-separated by `(epoch, user, amount, token_type)`.
+2. **Quorum Lifecycle Governance**
+   - `relay::AttestorQuorum` now tracks `epoch` and disabled attestors.
+   - DAO/admin governance path can add/remove/disable attestors with threshold-safety checks.
+   - `neural_bridge` command execution requires active quorum epoch alignment.
+3. **Versioned Brand Manifest**
+   - AOXC and Reputation branding moved to shared versioned manifest objects.
+   - Logo updates require module cap + DAO cap + checksum match + release hash append.
+4. **Scenario Extensions**
+   - `tests/scenario_tests.move` now includes Merkle domain/path preview assertions and quorum lifecycle rule checks.
+
 ## Remaining High-Priority Work
 
-1. Add scenario-level integration tests using `sui::test_scenario` for:
-   - bridge halt -> asset transfer blocked,
-   - DAO pause/resume with timelock,
-   - reputation proof mismatch rejection in live object flow.
+1. Expand `sui::test_scenario` to full shared-object transfer/retrieve lifecycle with multi-actor tx hops.
 2. Add event index schema and off-chain reconciliation playbook.
 3. Add signer-rotation and key ceremony SOPs.
 

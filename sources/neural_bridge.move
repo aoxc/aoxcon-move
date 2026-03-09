@@ -28,6 +28,7 @@ module aoxc::neural_bridge {
         source_chain: String,
         target: String,
         payload: bridge_payload::BridgePayload,
+        quorum_epoch: u64,
         deadline_ms: u64,
         confirmations: u16,
     }
@@ -49,6 +50,7 @@ module aoxc::neural_bridge {
 
     fun verify_quorum_signatures(
         signatures: &vector<vector<u8>>,
+        quorum: &relay::AttestorQuorum,
         signer_pubkeys: &vector<vector<u8>>,
         digest: &vector<u8>,
         threshold: u16,
@@ -60,7 +62,7 @@ module aoxc::neural_bridge {
         while (i < sig_len && i < key_len) {
             let sig = vector::borrow(signatures, i);
             let pk = vector::borrow(signer_pubkeys, i);
-            let ok = ecdsa_k1::secp256k1_verify(sig, pk, digest, 0);
+            let ok = ecdsa_k1::secp256k1_verify(sig, pk, digest, 0) && relay::is_attestor_active(quorum, pk);
             if (ok) { valid = valid + 1; };
             i = i + 1;
         };
@@ -110,6 +112,7 @@ module aoxc::neural_bridge {
         clock: &Clock,
     ): vector<u8> {
         assert!(command.source_chain == gateway.source_chain, errors::E_INVALID_ARGUMENT);
+        assert!(command.quorum_epoch == relay::epoch(quorum), errors::E_INVALID_ARGUMENT);
         assert!(clock::timestamp_ms(clock) <= command.deadline_ms, errors::E_TIMELOCK_EXPIRED);
         assert!(command.confirmations >= gateway.min_confirmations, errors::E_INVALID_ARGUMENT);
 
@@ -117,7 +120,7 @@ module aoxc::neural_bridge {
         assert!(!table::contains(&gateway.used_digests, &digest), errors::E_REPLAY);
 
         let payload_kind = bridge_payload::kind(&command.payload);
-        let signer_count = verify_quorum_signatures(&signatures, &gateway.signer_pubkeys, &digest, relay::threshold(quorum));
+        let signer_count = verify_quorum_signatures(&signatures, quorum, &gateway.signer_pubkeys, &digest, relay::threshold(quorum));
 
         if (payload_kind == bridge_payload::kind_system_halt()) {
             circuit_breaker::pause_from_module(breaker, bridge_payload::proof_root(&command.payload));

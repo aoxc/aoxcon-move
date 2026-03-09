@@ -18,7 +18,9 @@ module aoxc::relay {
     public struct AttestorQuorum has key {
         id: UID,
         attestor_pubkeys: vector<vector<u8>>,
+        disabled_attestors: vector<vector<u8>>,
         threshold: u16,
+        epoch: u64,
     }
 
     public struct PublicReportRelay has key {
@@ -53,8 +55,24 @@ module aoxc::relay {
         assert!(signers >= threshold, errors::E_QUORUM_NOT_MET);
     }
 
-    entry fun init(namespace: String, attestor_pubkeys: vector<vector<u8>>, threshold: u16, ctx: &mut TxContext) {
+    fun contains_pk(list: &vector<vector<u8>>, pk: &vector<u8>): bool {
+        let len = vector::length(list);
+        let mut i = 0;
+        while (i < len) {
+            if (*vector::borrow(list, i) == *pk) return true;
+            i = i + 1;
+        };
+        false
+    }
+
+    public fun assert_threshold_valid(attestor_count: u64, threshold: u16) {
         assert!(threshold > 0, errors::E_INVALID_ARGUMENT);
+        assert!(attestor_count > 0, errors::E_INVALID_ARGUMENT);
+        assert!((threshold as u64) <= attestor_count, errors::E_INVALID_ARGUMENT);
+    }
+
+    entry fun init(namespace: String, attestor_pubkeys: vector<vector<u8>>, threshold: u16, ctx: &mut TxContext) {
+        assert_threshold_valid(vector::length(&attestor_pubkeys), threshold);
 
         let cap = RelayAdminCap { id: object::new(ctx) };
         let relay = PublicReportRelay {
@@ -67,7 +85,9 @@ module aoxc::relay {
         let quorum = AttestorQuorum {
             id: object::new(ctx),
             attestor_pubkeys,
+            disabled_attestors: vector::empty<vector<u8>>(),
             threshold,
+            epoch: 1,
         };
 
         sui::transfer::share_object(relay);
@@ -76,8 +96,45 @@ module aoxc::relay {
     }
 
     entry fun update_quorum(_cap: &RelayAdminCap, quorum: &mut AttestorQuorum, next_threshold: u16) {
-        assert!(next_threshold > 0, errors::E_INVALID_ARGUMENT);
+        assert_threshold_valid(vector::length(&quorum.attestor_pubkeys), next_threshold);
         quorum.threshold = next_threshold;
+        quorum.epoch = quorum.epoch + 1;
+    }
+
+    entry fun add_attestor(_cap: &RelayAdminCap, quorum: &mut AttestorQuorum, pubkey: vector<u8>) {
+        assert!(vector::length(&pubkey) > 0, errors::E_EMPTY_HASH);
+        assert!(!contains_pk(&quorum.attestor_pubkeys, &pubkey), errors::E_ALREADY_EXISTS);
+        vector::push_back(&mut quorum.attestor_pubkeys, pubkey);
+        assert_threshold_valid(vector::length(&quorum.attestor_pubkeys), quorum.threshold);
+        quorum.epoch = quorum.epoch + 1;
+    }
+
+    entry fun remove_attestor(_cap: &RelayAdminCap, quorum: &mut AttestorQuorum, pubkey: vector<u8>) {
+        let len = vector::length(&quorum.attestor_pubkeys);
+        let mut i = 0;
+        let mut found = false;
+        while (i < len) {
+            if (*vector::borrow(&quorum.attestor_pubkeys, i) == pubkey) {
+                vector::remove(&mut quorum.attestor_pubkeys, i);
+                found = true;
+                break
+            };
+            i = i + 1;
+        };
+        assert!(found, errors::E_NOT_FOUND);
+        assert_threshold_valid(vector::length(&quorum.attestor_pubkeys), quorum.threshold);
+        quorum.epoch = quorum.epoch + 1;
+    }
+
+    entry fun disable_attestor(_cap: &RelayAdminCap, quorum: &mut AttestorQuorum, pubkey: vector<u8>) {
+        assert!(contains_pk(&quorum.attestor_pubkeys, &pubkey), errors::E_NOT_FOUND);
+        assert!(!contains_pk(&quorum.disabled_attestors, &pubkey), errors::E_ALREADY_EXISTS);
+        vector::push_back(&mut quorum.disabled_attestors, pubkey);
+        quorum.epoch = quorum.epoch + 1;
+    }
+
+    public fun is_attestor_active(quorum: &AttestorQuorum, pubkey: &vector<u8>): bool {
+        contains_pk(&quorum.attestor_pubkeys, pubkey) && !contains_pk(&quorum.disabled_attestors, pubkey)
     }
 
     entry fun anchor_report(
@@ -118,4 +175,6 @@ module aoxc::relay {
     }
 
     public fun threshold(quorum: &AttestorQuorum): u16 { quorum.threshold }
+    public fun epoch(quorum: &AttestorQuorum): u64 { quorum.epoch }
+    public fun attestor_count(quorum: &AttestorQuorum): u64 { vector::length(&quorum.attestor_pubkeys) }
 }

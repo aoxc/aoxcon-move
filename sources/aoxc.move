@@ -36,6 +36,14 @@ module aoxc::aoxc {
         logo_checksum: vector<u8>,
     }
 
+    public struct BrandManifest has key, store {
+        id: UID,
+        version: u64,
+        logo_url: String,
+        logo_checksum: vector<u8>,
+        changelog_hashes: vector<vector<u8>>,
+    }
+
     public struct Treasury has key {
         id: UID,
         max_supply: u64,
@@ -98,8 +106,16 @@ module aoxc::aoxc {
         };
 
         let treasury = Treasury { id: object::new(ctx), max_supply, minted_supply: 0 };
+        let manifest = BrandManifest {
+            id: object::new(ctx),
+            version: 1,
+            logo_url: string::utf8(b"logos/aoxc-token.png"),
+            logo_checksum: b"AOXC_LOGO_V1",
+            changelog_hashes: vector[ b"AOXC_MANIFEST_GENESIS" ],
+        };
 
         sui::transfer::share_object(treasury);
+        sui::transfer::share_object(manifest);
         sui::transfer::transfer(metadata, tx_context::sender(ctx));
         sui::transfer::transfer(display, tx_context::sender(ctx));
         sui::transfer::transfer(cap, tx_context::sender(ctx));
@@ -222,13 +238,20 @@ module aoxc::aoxc {
     entry fun set_display_logo(
         _module_cap: &TreasuryAdminCap,
         _dao_cap: &sentinel_dao::DaoAdminCap,
+        manifest: &mut BrandManifest,
         profile: &mut DisplayProfile,
         logo_url: String,
         logo_checksum: vector<u8>,
         governance_checksum: vector<u8>,
+        release_hash: vector<u8>,
     ) {
         assert!(vector::length(&logo_checksum) > 0, errors::E_EMPTY_HASH);
+        assert!(vector::length(&release_hash) > 0, errors::E_EMPTY_HASH);
         assert_logo_checksum(&governance_checksum, &logo_checksum);
+        manifest.version = manifest.version + 1;
+        manifest.logo_url = copy logo_url;
+        manifest.logo_checksum = copy logo_checksum;
+        vector::push_back(&mut manifest.changelog_hashes, release_hash);
         profile.logo_url = logo_url;
         profile.logo_checksum = logo_checksum;
     }
