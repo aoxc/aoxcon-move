@@ -1,72 +1,73 @@
-# AOXC Sui Protocol
+<div align="center">
 
-![AOXC Logo](logos/aoxc-token.png)
+<img src="logos/aoxc.png" alt="AOXC Logo" width="160" style="border-radius: 20%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
 
-Enterprise-grade, Sui-native protocol stack for AOXC with auditable cross-chain controls, real asset treasury custody, and hybrid AI/community governance.
+# 🌐 AOXC Sui Protocol
+**Enterprise-grade Sui-native Protocol Stack**
 
-## Quick Audit Navigation
+[![Sui Network](https://img.shields.io/badge/Network-Sui%20Mainnet-blue?style=flat-square&logo=sui)](https://sui.io)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green?style=flat-square)](LICENSE)
+[![Security](https://img.shields.io/badge/Audit-In%20Progress-orange?style=flat-square)](docs/AUDIT_NOTES.md)
 
-- Threat model: `docs/THREAT_MODEL.md`
-- Release gate checklist: `docs/RELEASE_CHECKLIST.md`
-- Formal invariants: `docs/SPEC.md`
-- Operational reconciliation: `docs/INDEXER_RUNBOOK.md`
+<p align="center">
+  <i>AOXC için denetlenebilir zincirler arası kontroller, gerçek varlık hazine saklama ve hibrit AI/Topluluk yönetişimine sahip kurumsal düzeyde protokol yığını.</i>
+</p>
 
-## Phase-3 Cross-Chain & Formal Security Highlights
+---
+</div>
 
-- **Typed bridge payloads:** `sources/bridge_payload.move` replaces raw command bytes with structured bridge/governance payloads.
-- **XLayer readiness:** EVM chain-id + xlayer sender validation for cross-chain payload integrity.
-- **Attestor quorum:** N-of-M trust model for relay/bridge critical validations.
-- **Command-target binding:** bridge command `target` field must match typed payload target module.
-- **Explicit decoding:** strict `vector<u8>` decoding helpers for Pause/Resume/FundUpdate and governance actions.
-- **Unified circuit breaker:** `sources/circuit_breaker.move` remains the single source of truth for protocol pause state.
-- **Real-asset treasury:** `sources/treasury.move` stores/distributes real `Coin<T>` value via `Balance<T>` vault custody.
-- **Reputation proof link:** `sources/reputation.move` requires relay attestations from `sources/relay.move` before score updates.
-- **Expanded tests:** `tests/phase1_negative_tests.move` + `tests/full_flow_tests.move` add invariant and typed-flow coverage.
-- **Scenario war-game tests:** `tests/scenario_tests.move` adds `sui::test_scenario`-based E2E rejection simulations.
-- **Governance guardrails:** DAO now enforces policy limits (timelock bounds, cooldown, max fund delta).
-- **Scalable treasury claims:** Merkle-claim mode (`publish_merkle_root` / `claim_reward`) for large recipient sets.
-- **Neural staking:** liquid staking + slash + auto-compound foundations in `sources/staking.move`.
-- **Yield hooks:** treasury lending/liquidity allocation policy and rebalance telemetry.
-- **Liquidity hub:** Cetus/Hop route layer in `sources/liquidity_manager.move`.
-- **AI marketplace base:** Walrus-linked dataset listing and license checks via `sources/marketplace.move`.
-- **Economic hardening:** slippage limits, yield-route enablement checks, and duplicate active blob protection.
-- **Observability pack:** `docs/EVENT_MAP.md` defines indexer-friendly event contracts.
-- **Visual branding hooks:** `aoxc.move` and `reputation.move` include logo-backed display profiles tied to `logos/`.
-- **Branding integrity:** logo updates require DAO-admin authorization and checksum match.
-- **Formal security hooks:** Move spec blocks added for critical modules to support prover-based verification workflows.
+## 🛡️ Hızlı Denetim & Güvenlik Navigasyonu
 
-## Modules
+Protokolün güvenlik katmanlarına doğrudan erişin:
 
-- `sources/errors.move`: centralized abort code catalog.
-- `sources/circuit_breaker.move`: unified protocol liveness state and pause/resume controls.
-- `sources/bridge_payload.move`: typed payload schemas for bridge and DAO actions.
-- `sources/neural_bridge.move`: bridge verifier with replay lock and signer checks; executes typed payload actions through circuit breaker.
-- `sources/aoxc.move`: neural asset object model with security lineage and status controls.
-- `sources/reputation.move`: reputation profiles linked to relay proof attestations.
-- `sources/treasury.move`: `Coin<T>`-backed autonomous treasury with score-gated distribution.
-- `sources/sentinel_dao.move`: timelock + veto governance, now routed through the unified circuit breaker.
-- `sources/relay.move`: Walrus report anchoring and attestation checks.
-- `sources/staking.move`: neural staking pool with slash and auto-compound hooks.
-- `sources/liquidity_manager.move`: DEX routing manager for swaps and LP flows.
-- `sources/marketplace.move`: AI dataset marketplace foundation (Walrus + license).
+* 🔍 **Tehdit Modeli:** [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md)
+* ✅ **Yayın Kontrol Listesi:** [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
+* 📐 **Resmi Değişmezler (Formal Invariants):** [`docs/SPEC.md`](docs/SPEC.md)
+* ⚙️ **Operasyonel Mutabakat:** [`docs/INDEXER_RUNBOOK.md`](docs/INDEXER_RUNBOOK.md)
 
-See `docs/AUDIT_NOTES.md`, `docs/SPEC.md`, `docs/EVENT_MAP.md`, and `docs/INDEXER_RUNBOOK.md` for audit, operations, and observability details.
+---
 
+## 🚀 Phase-3: Cross-Chain & Güvenlik Öne Çıkanlar
 
-### Documentation Pack
-- `docs/ARCHITECTURE.md` — enterprise module topology and trust planes.
-- `docs/SPEC.md` — invariants and runbooks.
-- `docs/AUDIT_NOTES.md` — phase progress and open gaps.
-- `docs/EVENT_MAP.md` — indexer event contracts.
-- `docs/INDEXER_RUNBOOK.md` — operations and reconciliation workflows.
-- `docs/SECURITY_CHECKLIST.md` — pre-mainnet security gate.
-- `docs/WALRUS_DIFFERENTIATION.md` — Walrus tabanlı farklılaşma sözleşmeleri ve AI-first entegrasyon önerileri.
-- `docs/THREAT_MODEL.md` — tehdit modeli, saldırı yüzeyi ve azaltımlar.
-- `docs/RELEASE_CHECKLIST.md` — release öncesi audit kapıları ve imza checklisti.
-- `docs/ECONOMY.md` — Phase-5 Neural Economy katmanı.
-- `docs/ROADMAP_2026.md` — 2026 hedef ve kilometre taşları.
-- `docs/GAP_ANALYSIS.md` — "full mü?" sorusu için kalan teknik/operasyonel gap analizi.
+| Özellik | Açıklama | Dosya Yolu |
+| :--- | :--- | :--- |
+| **Typed Bridge** | Ham byte yerine yapılandırılmış bridge/yönetişim payload'ları. | `bridge_payload.move` |
+| **XLayer Ready** | EVM chain-id ve gönderici doğrulama ile tam entegrasyon. | `neural_bridge.move` |
+| **Real-Asset Treasury** | `Balance<T>` kasa koruması ile gerçek `Coin<T>` saklama. | `treasury.move` |
+| **Neural Staking** | Likit staking, slash mekanizması ve auto-compound temelleri. | `staking.move` |
+| **AI Marketplace** | Walrus tabanlı veri kümesi listeleme ve lisans kontrolleri. | `marketplace.move` |
 
-### AI Compatibility Layer
-- `ai/README.md` — AOXCAN AI klasörünün kapsamı.
-- `ai/INTEGRATION.md` — XLayer + Sui + Walrus AI uyumluluk akışı.
+### ✨ Teknik Yetkinlikler
+* 🔬 **Attestor Quorum:** Kritik doğrulamalar için N-of-M güven modeli.
+* 🛑 **Circuit Breaker:** Protokol duraklatma durumları için tek doğruluk kaynağı (`circuit_breaker.move`).
+* 📊 **Merkle Claims:** Geniş alıcı setleri için ölçeklenebilir ödül toplama sistemi.
+* 🤖 **AI Economy:** XLayer + Sui + Walrus entegrasyonu ile AI-first mimari.
+
+---
+
+## 📦 Modül Yapısı (Core Modules)
+
+- 🛠️ `errors.move`: Merkezi hata kodu kataloğu.
+- ⚡ `circuit_breaker.move`: Protokol canlılık durumu ve acil durdurma kontrolleri.
+- 🏗️ `bridge_payload.move`: Köprü ve DAO eylemleri için tip güvenli şemalar.
+- 💎 `aoxc.move`: Güvenlik geçmişine sahip neural varlık nesne modeli.
+- ⚖️ `sentinel_dao.move`: Timelock ve veto yetkili yönetişim katmanı.
+- 🌊 `liquidity_manager.move`: DEX rotalama (Cetus/Hop) ve swap akışları.
+
+---
+
+## 📂 Dokümantasyon Paketi
+
+| Bölüm | İçerik ve Kapsam |
+| :--- | :--- |
+| **Mimari** | [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Modül topolojisi ve güven düzlemleri. |
+| **Analiz** | [`GAP_ANALYSIS.md`](docs/GAP_ANALYSIS.md) — "Full mü?" sorusu için teknik boşluk analizi. |
+| **Yol Haritası** | [`ROADMAP_2026.md`](docs/ROADMAP_2026.md) — 2026 hedefleri ve kilometre taşları. |
+| **AI Katmanı** | [`ai/INTEGRATION.md`](ai/INTEGRATION.md) — XLayer + Walrus AI uyumluluk akışı. |
+| **Gözlemlenebilirlik**| [`EVENT_MAP.md`](docs/EVENT_MAP.md) — Indexer dostu olay sözleşmeleri. |
+
+---
+
+<div align="center">
+  <sub>© 2026 AOXC Protocol | Secure. Auditable. Intelligent.</sub>
+</div>
