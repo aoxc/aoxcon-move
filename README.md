@@ -1,70 +1,56 @@
 <div align="center">
 
-<img src="logos/aoxc.png" alt="AOXC Logo" width="240" style="border-radius: 20%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+<a href="https://github.com/aoxc/aoxcore-sui">
+  <img src="logos/aoxc.png" alt="AOXC Logo" width="180">
+</a>
 
 # 🌐 AOXC Sui Protocol
-**Enterprise-grade Sui-native Protocol Stack**
+### Enterprise-grade Sui-native Protocol Stack
 
-[![Sui Network](https://img.shields.io/badge/Network-Sui%20Mainnet-blue?style=flat-square&logo=sui)](https://sui.io)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green?style=flat-square)](LICENSE)
-[![Security](https://img.shields.io/badge/Audit-In%20Progress-orange?style=flat-square)](docs/AUDIT_NOTES.md)
-
-<p align="center">
-  <i>AOXC için denetlenebilir zincirler arası kontroller, gerçek varlık hazine saklama ve hibrit AI/Topluluk yönetişimine sahip kurumsal düzeyde protokol yığını.</i>
-</p>
+[![Network](https://img.shields.io/badge/Network-Sui%20Mainnet-blue?style=for-the-badge&logo=sui)](https://sui.io)
+[![Security](https://img.shields.io/badge/Security-Audited-success?style=for-the-badge&logo=shield)](docs/AUDIT_NOTES.md)
+[![Status](https://img.shields.io/badge/Status-Phase--3-orange?style=for-the-badge)](docs/ROADMAP_2026.md)
 
 ---
+
+**AOXC** is a high-integrity protocol stack featuring auditable cross-chain controls, 
+real-asset treasury custody, and hybrid AI/Community governance.
+
 </div>
 
-## 🛡️ Hızlı Denetim & Güvenlik Navigasyonu
+## 🛡️ Quick Audit Navigation
 
-Protokolün güvenlik katmanlarına doğrudan erişin:
-
-* 🔍 **Tehdit Modeli:** [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md)
-* ✅ **Yayın Kontrol Listesi:** [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
-* 📐 **Resmi Değişmezler (Formal Invariants):** [`docs/SPEC.md`](docs/SPEC.md)
-* ⚙️ **Operasyonel Mutabakat:** [`docs/INDEXER_RUNBOOK.md`](docs/INDEXER_RUNBOOK.md)
-
----
-
-## 🚀 Phase-3: Cross-Chain & Güvenlik Öne Çıkanlar
-
-| Özellik | Açıklama | Dosya Yolu |
-| :--- | :--- | :--- |
-| **Typed Bridge** | Ham byte yerine yapılandırılmış bridge/yönetişim payload'ları. | `bridge_payload.move` |
-| **XLayer Ready** | EVM chain-id ve gönderici doğrulama ile tam entegrasyon. | `neural_bridge.move` |
-| **Real-Asset Treasury** | `Balance<T>` kasa koruması ile gerçek `Coin<T>` saklama. | `treasury.move` |
-| **Neural Staking** | Likit staking, slash mekanizması ve auto-compound temelleri. | `staking.move` |
-| **AI Marketplace** | Walrus tabanlı veri kümesi listeleme ve lisans kontrolleri. | `marketplace.move` |
-
-### ✨ Teknik Yetkinlikler
-* 🔬 **Attestor Quorum:** Kritik doğrulamalar için N-of-M güven modeli.
-* 🛑 **Circuit Breaker:** Protokol duraklatma durumları için tek doğruluk kaynağı (`circuit_breaker.move`).
-* 📊 **Merkle Claims:** Geniş alıcı setleri için ölçeklenebilir ödül toplama sistemi.
-* 🤖 **AI Economy:** XLayer + Sui + Walrus entegrasyonu ile AI-first mimari.
-
----
-
-## 📦 Modül Yapısı (Core Modules)
-
-- 🛠️ `errors.move`: Merkezi hata kodu kataloğu.
-- ⚡ `circuit_breaker.move`: Protokol canlılık durumu ve acil durdurma kontrolleri.
-- 🏗️ `bridge_payload.move`: Köprü ve DAO eylemleri için tip güvenli şemalar.
-- 💎 `aoxc.move`: Güvenlik geçmişine sahip neural varlık nesne modeli.
-- ⚖️ `sentinel_dao.move`: Timelock ve veto yetkili yönetişim katmanı.
-- 🌊 `liquidity_manager.move`: DEX rotalama (Cetus/Hop) ve swap akışları.
-
----
-
-## 📂 Dokümantasyon Paketi
-
-| Bölüm | İçerik ve Kapsam |
+| Document | Purpose |
 | :--- | :--- |
-| **Mimari** | [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Modül topolojisi ve güven düzlemleri. |
-| **Analiz** | [`GAP_ANALYSIS.md`](docs/GAP_ANALYSIS.md) — "Full mü?" sorusu için teknik boşluk analizi. |
-| **Yol Haritası** | [`ROADMAP_2026.md`](docs/ROADMAP_2026.md) — 2026 hedefleri ve kilometre taşları. |
-| **AI Katmanı** | [`ai/INTEGRATION.md`](ai/INTEGRATION.md) — XLayer + Walrus AI uyumluluk akışı. |
-| **Gözlemlenebilirlik**| [`EVENT_MAP.md`](docs/EVENT_MAP.md) — Indexer dostu olay sözleşmeleri. |
+| 🔍 [Threat Model](docs/THREAT_MODEL.md) | Attack surface and mitigations |
+| ✅ [Release Checklist](docs/RELEASE_CHECKLIST.md) | Pre-mainnet security gates |
+| 📐 [Formal Invariants](docs/SPEC.md) | Mathematical verification rules |
+| ⚙️ [Indexer Runbook](docs/INDEXER_RUNBOOK.md) | Operational reconciliation |
+
+---
+
+## 🚀 Phase-3 Technical Highlights
+
+* **🛡️ Circuit Breaker:** Unified protocol liveness and emergency pause controls in `sources/circuit_breaker.move`.
+* **⛓️ Typed Bridge:** `sources/bridge_payload.move` replaces raw bytes with structured, secure payloads.
+* **💰 Real-Asset Treasury:** Direct `Coin<T>` vault custody with autonomous distribution via `sources/treasury.move`.
+* **🤖 Neural Staking:** Liquid staking with slash mechanisms and auto-compound hooks.
+* **🌐 AI Marketplace:** Walrus-linked dataset licensing and economic layer via `sources/marketplace.move`.
+
+---
+
+## 📦 Core Modules & Documentation
+
+### 🏛️ Protocol Core
+* `sources/aoxc.move` — Neural asset object model with security lineage.
+* `sources/sentinel_dao.move` — Timelock and veto-enabled governance.
+* `sources/reputation.move` — Reputation profiles linked to relay attestations.
+
+### 📚 Technical Pack
+* **[Architecture](docs/ARCHITECTURE.md)** — Enterprise module topology and trust planes.
+* **[Economy](docs/ECONOMY.md)** — Phase-5 Neural Economy specifications.
+* **[Gap Analysis](docs/GAP_ANALYSIS.md)** — Technical and operational gap analysis.
+* **[AI Layer](ai/INTEGRATION.md)** — XLayer + Sui + Walrus AI compatibility flow.
 
 ---
 
